@@ -5,6 +5,8 @@ import coprocess.CoprocessObject;
 import coprocess.CoprocessSessionState;
 import coprocess.CoprocessReturnOverrides;
 
+import java.util.Date;
+
 public class TykDispatcher extends DispatcherGrpc.DispatcherImplBase {
 
     final String FOOBAR = "foobar";
@@ -15,8 +17,10 @@ public class TykDispatcher extends DispatcherGrpc.DispatcherImplBase {
 
         System.out.println("*** Incoming Request ***");
         System.out.println("Hook name: " + request.getHookName());
+        System.out.println("existing metadata: " + request.getMetadataMap());
 
         final CoprocessObject.Object modifiedRequest = MyAuthHook(request);
+        System.out.println("updated metadata: " + modifiedRequest.getMetadataMap());
         responseObserver.onNext(modifiedRequest);
 
         System.out.println("*** Transformed Request ***");
@@ -25,17 +29,17 @@ public class TykDispatcher extends DispatcherGrpc.DispatcherImplBase {
     }
 
     CoprocessObject.Object MyAuthHook(CoprocessObject.Object request) {
-        String authHeader = request.getRequest().getHeadersOrDefault("Authorization", "");
-        if(!authHeader.equals(FOOBAR)) {
-            CoprocessObject.Object.Builder builder = request.toBuilder();
-            CoprocessReturnOverrides.ReturnOverrides retOverrides = CoprocessReturnOverrides.ReturnOverrides.newBuilder()
-            .setResponseCode(403)
-            .setResponseError("Not authorized")
-            .build();
+        // String authHeader = request.getRequest().getHeadersOrDefault("Authorization", "");
+        // if(!authHeader.equals(FOOBAR)) {
+        //     CoprocessObject.Object.Builder builder = request.toBuilder();
+        //     CoprocessReturnOverrides.ReturnOverrides retOverrides = CoprocessReturnOverrides.ReturnOverrides.newBuilder()
+        //     .setResponseCode(403)
+        //     .setResponseError("Not authorized")
+        //     .build();
 
-            builder.getRequestBuilder().setReturnOverrides(retOverrides);
-            return builder.build();
-        }
+        //     builder.getRequestBuilder().setReturnOverrides(retOverrides);
+        //     return builder.build();
+        // }
 
         final long expiryTime = (System.currentTimeMillis() / 1000) + 5;
 
@@ -46,8 +50,7 @@ public class TykDispatcher extends DispatcherGrpc.DispatcherImplBase {
         .build();
 
         CoprocessObject.Object.Builder builder = request.toBuilder();
-        // Mandatory fields
-        builder.putMetadata("token", FOOBAR);  // Used for downstream chains
+        builder.putMetadata("newvalue", new Date().toString());
         builder.setSession(session);
 
         return builder.build();
