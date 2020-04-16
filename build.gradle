@@ -42,6 +42,7 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.auth0:java-jwt:3.10.2'
     compile 'io.grpc:grpc-all:1.21.0'
     compile 'com.rabbitmq:amqp-client:5.4.2'
     compileOnly "javax.annotation:javax.annotation-api:1.2"
