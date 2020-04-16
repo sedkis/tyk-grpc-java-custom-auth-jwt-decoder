@@ -10,17 +10,42 @@ A class implements the required hook methods.
 
 ## The hook
 
-This plugin implements a single hook, it performs authorization by comparing a header value, you may see the code [here](https://github.com/TykTechnologies/tyk-plugin-coprocess-grpc-java-custom-auth/blob/master/src/main/java/com/tyktechnologies/tykmiddleware/TykDispatcher.java).
+This plugin implements a single hook, it recieves a JWT, decodes it, and creates a new JWT using the Claims from the old JWT as well as adding some new ones.
 
 ## Running the gRPC server
 
 	gradle run
 
-## Building a plugin bundle
-Note that a plugin bundle is not necessary to run middleware.  It's simply a deployment option.  This blog post [here](https://tyk.io/blog/how-to-setup-custom-authentication-middleware-using-grpc-and-java/) describes how to use custom middleware without plugin bundles.
 
-To use it you must generate a bundle and load it into your Tyk API settings. [this guide](https://tyk.io/tyk-documentation/customise-tyk/plugins/rich-plugins/plugin-bundles/) will walk you through the process.
+## Enable GRPC in tyk.conf
+```json
+"coprocess_options": {
+    "enable_coprocess": true,
+    "coprocess_grpc_server": "tcp://localhost:5555"
+  },
+```
 
-The [`manifest.json`](manifest.json) file describes the hooks implemented by this plugin.  It can be served via http server to Tyk Gateways.  A Tyk Gateway will load it into memory to understand how to talk to your custom plugin.  
 
-Included in this repo is a ['docker-compose.nginx.yaml'](docker-compose.nginx.yaml) that will run a local Nginx instance to serve your bundle that you generated in the tutorial above using the `manifest.json` file.
+## Enable custom GRPC middleware in API definition
+Add this to the Tyk API definition:
+
+```json
+"custom_middleware": {
+      "pre": [],
+      "post": [],
+      "post_key_auth": [],
+      "auth_check": {
+        "name": "MyAuthHook",
+        "path": "",
+        "require_session": false,
+        "raw_body_only": false
+      },
+      "response": [],
+      "driver": "grpc",
+      "id_extractor": {
+        "extract_from": "",
+        "extract_with": "",
+        "extractor_config": {}
+      }
+    },
+    ```
