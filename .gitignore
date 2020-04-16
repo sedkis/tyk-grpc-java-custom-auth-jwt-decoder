@@ -3,3 +3,4 @@ build/
 src/generated
 .idea
 bundle.zip
+gradle
